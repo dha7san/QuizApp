@@ -2,6 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { io } from 'socket.io-client';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+    AlertCircle, User, Terminal, Bell, ShieldAlert, 
+    Video, Layout, RefreshCcw, ExternalLink, PlayCircle 
+} from 'lucide-react';
 
 // ── Neumorphic styles ──
 const neu = {
@@ -146,10 +151,17 @@ const AdminDashboard = () => {
             socketRef.current = socket;
             socket.on('connect', () => socket.emit('admin:join', quizId));
             socket.on('flag:update', (data) => {
-                setFlagAlerts(prev => [...prev, data]);
+                const alertData = { ...data, id: Date.now() };
+                setFlagAlerts(prev => [alertData, ...prev].slice(0, 10)); // Keep last 10
+                
+                // Visual feedback in attendees list
                 setAttendees(prev => {
                     if (!prev) return prev;
-                    const upd = prev.attendees.map(a => a._id?.toString() === data.userId ? { ...a, flagCount: data.flagCount, isSuspicious: data.flagCount > 0 } : a);
+                    const upd = prev.attendees.map(a => 
+                        a._id?.toString() === data.userId 
+                            ? { ...a, flagCount: data.flagCount, isSuspicious: true, lastFlagType: data.flagType } 
+                            : a
+                    );
                     return { ...prev, attendees: upd };
                 });
             });
@@ -393,22 +405,71 @@ const AdminDashboard = () => {
                                     </div>
                                 </div>
 
-                                {/* Flag Alerts */}
-                                {flagAlerts.length > 0 && (
-                                    <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                        {flagAlerts.slice(-5).map((a, i) => (
-                                            <div key={i} style={{
-                                                padding: '10px 14px', borderRadius: 'var(--radius-sm)',
-                                                background: 'rgba(255,69,58,0.08)', border: '1px solid rgba(255,69,58,0.2)',
-                                                fontSize: 13, display: 'flex', justifyContent: 'space-between',
-                                                color: '#cc000a', fontWeight: 500
-                                            }}>
-                                                <span>🚩 <b>{a.userName}</b> — {a.flagType.replace('_', ' ')} (Flag #{a.flagCount})</span>
-                                                <span style={{ color: '#aaa', fontSize: 11 }}>{new Date(a.timestamp).toLocaleTimeString()}</span>
-                                            </div>
-                                        ))}
+                                {/* Live Monitor Section */}
+                                <div style={{ marginBottom: 24 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                                        <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff3b30', boxShadow: '0 0 10px #ff3b30', animation: 'pulse 1.5s infinite' }} />
+                                        <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#111' }}>
+                                            Live Activity Feed
+                                        </h4>
                                     </div>
-                                )}
+                                    
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: flagAlerts.length > 0 ? 'auto' : 80 }}>
+                                        <AnimatePresence mode="popLayout">
+                                            {flagAlerts.length === 0 ? (
+                                                <motion.div 
+                                                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                                    style={{ padding: '24px', textAlign: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: 16, border: '1px dashed rgba(0,0,0,0.1)', color: '#999', fontSize: 13 }}
+                                                >
+                                                    <Terminal size={20} style={{ marginBottom: 8, opacity: 0.5 }} /><br/>
+                                                    Listening for real-time events...
+                                                </motion.div>
+                                            ) : (
+                                                flagAlerts.map((alert) => (
+                                                    <motion.div
+                                                        key={alert.id}
+                                                        initial={{ x: -20, opacity: 0, scale: 0.95 }}
+                                                        animate={{ x: 0, opacity: 1, scale: 1 }}
+                                                        exit={{ x: 20, opacity: 0 }}
+                                                        layout
+                                                        style={{
+                                                            padding: '12px 16px', borderRadius: 16,
+                                                            background: alert.flagCount >= 3 ? 'rgba(255, 59, 48, 0.08)' : 'white',
+                                                            border: `1px solid ${alert.flagCount >= 3 ? 'rgba(255, 59, 48, 0.2)' : 'rgba(0, 0, 0, 0.04)'}`,
+                                                            boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                                                            display: 'flex', alignItems: 'center', gap: 14
+                                                        }}
+                                                    >
+                                                        <div style={{ 
+                                                            width: 40, height: 40, borderRadius: '50%', 
+                                                            background: alert.flagCount >= 3 ? '#ff3b30' : '#ff9f0a',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
+                                                        }}>
+                                                            <ShieldAlert size={20} />
+                                                        </div>
+                                                        <div style={{ flex: 1 }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                                                                <span style={{ fontWeight: 700, fontSize: 14, color: '#111' }}>{alert.userName}</span>
+                                                                <span style={{ fontSize: 11, fontWeight: 600, color: '#666' }}>{new Date(alert.timestamp).toLocaleTimeString()}</span>
+                                                            </div>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: alert.flagCount >= 3 ? '#cc000a' : '#666' }}>
+                                                                {alert.flagType === 'tab_switch' && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Layout size={13} /> Tab Switch</span>}
+                                                                {alert.flagType === 'fullscreen_exit' && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><ExternalLink size={13} /> Exited Fullscreen</span>}
+                                                                {alert.flagType === 'page_blur' && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><AlertCircle size={13} /> Focus Lost</span>}
+                                                                <span style={{ fontWeight: 800 }}>• Flag #{alert.flagCount}</span>
+                                                            </div>
+                                                        </div>
+                                                        {alert.flagCount >= 3 && (
+                                                            <div style={{ fontSize: 11, fontWeight: 900, color: '#ff3b30', textTransform: 'uppercase', letterSpacing: '0.02em', background: 'rgba(255,59,48,0.1)', padding: '4px 8px', borderRadius: 6 }}>
+                                                                Terminated
+                                                            </div>
+                                                        )}
+                                                    </motion.div>
+                                                ))
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                </div>
 
                                 {/* Attendees Table */}
                                 <div style={{ overflowX: 'auto' }}>
