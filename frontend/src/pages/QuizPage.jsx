@@ -68,7 +68,7 @@ const QuizPage = () => {
 
     const reportFlag = useCallback(async (flagType) => {
         try {
-            const res = await axios.post('http://localhost:5000/api/quiz/flag',
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/quiz/flag`,
                 { quizId: id, flagType },
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
@@ -80,7 +80,7 @@ const QuizPage = () => {
 
     /* Load quiz info */
     useEffect(() => {
-        axios.post('http://localhost:5000/api/quiz/info', { quizId: id }, { headers: { Authorization: `Bearer ${user.token}` } })
+        axios.post(`${import.meta.env.VITE_API_URL}/api/quiz/info`, { quizId: id }, { headers: { Authorization: `Bearer ${user.token}` } })
             .then(res => {
                 setQuiz(res.data.quiz);
                 if (res.data.status === 'resuming' && res.data.savedState) {
@@ -110,7 +110,7 @@ const QuizPage = () => {
         const t = setInterval(async () => {
             try {
                 setIsSaving(true);
-                await axios.post('http://localhost:5000/api/quiz/save',
+                await axios.post(`${import.meta.env.VITE_API_URL}/api/quiz/save`,
                     { quizId: id, answers: answersRef.current, timeRemaining: timeLeft },
                     { headers: { Authorization: `Bearer ${user.token}` } }
                 );
@@ -165,7 +165,7 @@ const QuizPage = () => {
             if (isResuming) {
                 setQuizStarted(true);
             } else {
-                const res = await axios.post('http://localhost:5000/api/quiz/start', { quizId: id }, { headers: { Authorization: `Bearer ${user.token}` } });
+                const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/quiz/start`, { quizId: id }, { headers: { Authorization: `Bearer ${user.token}` } });
                 setQuestions(res.data.questions);
                 setTimeLeft(res.data.quiz.duration * 60);
                 setQuizStarted(true);
@@ -181,7 +181,7 @@ const QuizPage = () => {
         setAnswers(newAnswers);
         try {
             setIsSaving(true);
-            await axios.post('http://localhost:5000/api/quiz/save',
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/quiz/save`,
                 { quizId: id, answers: newAnswers, timeRemaining: timeLeft },
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
@@ -194,7 +194,7 @@ const QuizPage = () => {
         const cur = force ? answersRef.current : answers;
         const formatted = Object.keys(cur).map(qId => ({ questionId: qId, selectedOption: cur[qId] }));
         try {
-            const res = await axios.post('http://localhost:5000/api/quiz/submit', {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/quiz/submit`, {
                 quizId: id, answers: formatted,
                 isSuspicious: flagCountRef.current > 0 || force,
                 tabSwitches: flagCountRef.current, fullscreenExits: 0,

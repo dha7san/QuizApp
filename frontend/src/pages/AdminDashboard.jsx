@@ -107,33 +107,33 @@ const AdminDashboard = () => {
     useEffect(() => () => { if (socketRef.current) { socketRef.current.disconnect(); socketRef.current = null; } }, []);
 
     const fetchQuizzes = async () => {
-        const res = await axios.get('http://localhost:5000/api/admin/all-quizzes', { headers: { Authorization: `Bearer ${user.token}` } }).catch(console.error);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/all-quizzes`, { headers: { Authorization: `Bearer ${user.token}` } }).catch(console.error);
         if (res) { setQuizzes(res.data); if (res.data.length > 0 && !selectedQuizId) setSelectedQuizId(res.data[0]._id); }
     };
     const fetchResults = async () => {
-        const res = await axios.get('http://localhost:5000/api/admin/results', { headers: { Authorization: `Bearer ${user.token}` } }).catch(console.error);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/results`, { headers: { Authorization: `Bearer ${user.token}` } }).catch(console.error);
         if (res) setResults(res.data);
     };
     const fetchUsers = async () => {
-        const res = await axios.get('http://localhost:5000/api/admin/users', { headers: { Authorization: `Bearer ${user.token}` } }).catch(console.error);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/users`, { headers: { Authorization: `Bearer ${user.token}` } }).catch(console.error);
         if (res) setUsers(res.data);
     };
     const fetchAppSettings = async () => {
-        const res = await axios.get('http://localhost:5000/api/admin/settings').catch(console.error);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/settings`).catch(console.error);
         if (res) setRegistrationOpen(res.data.registrationOpen);
     };
 
     const handleToggleRegistration = async () => {
-        const res = await axios.post('http://localhost:5000/api/admin/toggle-registration', {}, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => alert(e.response?.data?.message || 'Error'));
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/toggle-registration`, {}, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => alert(e.response?.data?.message || 'Error'));
         if (res) setRegistrationOpen(res.data.registrationOpen);
     };
 
     const fetchLiveAttendees = async (quizId) => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/admin/live-attendees/${quizId}`, { headers: { Authorization: `Bearer ${user.token}` } });
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/live-attendees/${quizId}`, { headers: { Authorization: `Bearer ${user.token}` } });
             setAttendees(res.data); setSelectedQuizForAttendees(quizId); setFlagAlerts([]);
             if (socketRef.current) socketRef.current.disconnect();
-            const socket = io('http://localhost:5000');
+            const socket = io(import.meta.env.VITE_API_URL);
             socketRef.current = socket;
             socket.on('connect', () => socket.emit('admin:join', quizId));
             socket.on('flag:update', (data) => {
@@ -148,40 +148,40 @@ const AdminDashboard = () => {
     };
 
     const handleToggleResults = async (quizId) => {
-        await axios.post('http://localhost:5000/api/admin/toggle-results', { quizId }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => alert(e.response?.data?.message));
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/toggle-results`, { quizId }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => alert(e.response?.data?.message));
         setOpenDropdownId(null); fetchQuizzes();
     };
     const handleToggleLeaderboard = async (quizId) => {
-        await axios.post('http://localhost:5000/api/admin/toggle-leaderboard', { quizId }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => alert(e.response?.data?.message));
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/toggle-leaderboard`, { quizId }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => alert(e.response?.data?.message));
         setOpenDropdownId(null); fetchQuizzes();
     };
     const handleStopQuiz = async (quizId) => {
         if (!window.confirm('Stop this quiz? Users won\'t be able to take it anymore.')) return;
-        await axios.post('http://localhost:5000/api/admin/stop-quiz', { quizId }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => alert(e.response?.data?.message));
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/stop-quiz`, { quizId }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => alert(e.response?.data?.message));
         setOpenDropdownId(null); fetchQuizzes();
     };
     const handleDeleteQuiz = async (quizId) => {
         if (!window.confirm('DELETE this quiz? All questions and submissions will be removed. This cannot be undone!')) return;
-        await axios.delete(`http://localhost:5000/api/admin/delete-quiz/${quizId}`, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => alert(e.response?.data?.message));
+        await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/delete-quiz/${quizId}`, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => alert(e.response?.data?.message));
         setOpenDropdownId(null); fetchQuizzes();
     };
     const handleBlockUser = async (userId) => {
         if (!window.confirm('Block this user?')) return;
-        await axios.post('http://localhost:5000/api/admin/block-user', { userId }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => alert(e.response?.data?.message));
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/block-user`, { userId }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => alert(e.response?.data?.message));
         fetchUsers();
     };
     const handleUnblockUser = async (userId) => {
-        await axios.post('http://localhost:5000/api/admin/unblock-user', { userId }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => alert(e.response?.data?.message));
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/unblock-user`, { userId }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => alert(e.response?.data?.message));
         fetchUsers();
     };
     const handleCreateQuiz = async (e) => {
         e.preventDefault();
-        await axios.post('http://localhost:5000/api/admin/create-quiz', { title, quizCode, duration, startTime }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => { alert(e.response?.data?.message || 'Error'); return null; }).then(res => { if (res) { setTitle(''); setQuizCode(''); setDuration(30); fetchQuizzes(); } });
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/create-quiz`, { title, quizCode, duration, startTime }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => { alert(e.response?.data?.message || 'Error'); return null; }).then(res => { if (res) { setTitle(''); setQuizCode(''); setDuration(30); fetchQuizzes(); } });
     };
     const handleAddQuestion = async (e) => {
         e.preventDefault();
         if (!options.includes(correctAnswer)) return alert('Correct answer must exactly match one of the options.');
-        await axios.post('http://localhost:5000/api/admin/add-question', { quizId: selectedQuizId, question, options, correctAnswer }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => { alert(e.response?.data?.message || 'Error'); return null; }).then(res => { if (res) { setQuestion(''); setOptions(['', '', '', '']); setCorrectAnswer(''); } });
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/add-question`, { quizId: selectedQuizId, question, options, correctAnswer }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => { alert(e.response?.data?.message || 'Error'); return null; }).then(res => { if (res) { setQuestion(''); setOptions(['', '', '', '']); setCorrectAnswer(''); } });
     };
 
     const bg = 'var(--neu-bg)';

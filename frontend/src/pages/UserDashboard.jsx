@@ -13,7 +13,7 @@ const UserDashboard = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get('http://localhost:5000/api/quiz', { headers: { Authorization: `Bearer ${user.token}` } })
+        axios.get(`${import.meta.env.VITE_API_URL}/api/quiz`, { headers: { Authorization: `Bearer ${user.token}` } })
             .then(r => setQuizzes(r.data))
             .catch(console.error)
             .finally(() => setLoading(false));
@@ -24,7 +24,7 @@ const UserDashboard = () => {
         if (!joinCode.trim()) return;
         setJoining(true); setJoinError('');
         try {
-            const r = await axios.post('http://localhost:5000/api/quiz/verify-code',
+            const r = await axios.post(`${import.meta.env.VITE_API_URL}/api/quiz/verify-code`,
                 { quizCode: joinCode },
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );

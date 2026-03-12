@@ -15,7 +15,7 @@ const Leaderboard = () => {
     const nav = useNavigate();
 
     useEffect(() => {
-        axios.get('http://localhost:5000/api/quiz/leaderboards', { headers: { Authorization: `Bearer ${user.token}` } })
+        axios.get(`${import.meta.env.VITE_API_URL}/api/quiz/leaderboards`, { headers: { Authorization: `Bearer ${user.token}` } })
             .then(r => { setQuizzes(r.data); if (r.data.length > 0) setSelectedQuiz(r.data[0]._id); })
             .catch(console.error).finally(() => setLoadingQ(false));
     }, [user.token]);
@@ -23,7 +23,7 @@ const Leaderboard = () => {
     useEffect(() => {
         if (!selectedQuiz) return;
         setLoadingL(true);
-        axios.get(`http://localhost:5000/api/quiz/leaderboard/${selectedQuiz}`, { headers: { Authorization: `Bearer ${user.token}` } })
+        axios.get(`${import.meta.env.VITE_API_URL}/api/quiz/leaderboard/${selectedQuiz}`, { headers: { Authorization: `Bearer ${user.token}` } })
             .then(r => setUsers(r.data))
             .catch(() => setUsers([])).finally(() => setLoadingL(false));
     }, [selectedQuiz, user.token]);

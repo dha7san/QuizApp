@@ -22,7 +22,7 @@ const MyResults = () => {
     const nav = useNavigate();
 
     useEffect(() => {
-        axios.get('http://localhost:5000/api/quiz/my-results', { headers: { Authorization: `Bearer ${user.token}` } })
+        axios.get(`${import.meta.env.VITE_API_URL}/api/quiz/my-results`, { headers: { Authorization: `Bearer ${user.token}` } })
             .then(r => setResults(r.data))
             .catch(console.error).finally(() => setLoading(false));
     }, [user.token]);

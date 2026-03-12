@@ -28,7 +28,7 @@ const Register = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get('http://localhost:5000/api/admin/settings')
+        axios.get(`${import.meta.env.VITE_API_URL}/api/admin/settings`)
             .then(r => setOpen(r.data.registrationOpen))
             .catch(() => setOpen(true))
             .finally(() => setChecking(false));

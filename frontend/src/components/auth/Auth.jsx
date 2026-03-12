@@ -77,7 +77,7 @@ const Auth = () => {
 
     useEffect(() => {
         setIsToggled(location.pathname === '/register');
-        axios.get('http://localhost:5000/api/admin/settings')
+        axios.get(`${import.meta.env.VITE_API_URL}/api/admin/settings`)
             .then(r  => setRegOpen(r.data.registrationOpen))
             .catch(() => setRegOpen(true))
             .finally(() => setCheckingReg(false));
