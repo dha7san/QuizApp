@@ -93,9 +93,12 @@ const AdminDashboard = () => {
     const [question, setQuestion] = useState('');
     const [options, setOptions] = useState(['', '', '', '']);
     const [correctAnswer, setCorrectAnswer] = useState('');
+    const [questionImage, setQuestionImage] = useState('');
+    const [imagePreview, setImagePreview] = useState('');
 
     const [openDropdownId, setOpenDropdownId] = useState(null);
     const dropdownRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         fetchQuizzes();
@@ -189,7 +192,46 @@ const AdminDashboard = () => {
     const handleAddQuestion = async (e) => {
         e.preventDefault();
         if (!options.includes(correctAnswer)) return alert('Correct answer must exactly match one of the options.');
-        await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/add-question`, { quizId: selectedQuizId, question, options, correctAnswer }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => { alert(e.response?.data?.message || 'Error'); return null; }).then(res => { if (res) { setQuestion(''); setOptions(['', '', '', '']); setCorrectAnswer(''); } });
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/add-question`, { quizId: selectedQuizId, question, options, correctAnswer, image: questionImage }, { headers: { Authorization: `Bearer ${user.token}` } }).catch(e => { alert(e.response?.data?.message || 'Error'); return null; }).then(res => { if (res) { setQuestion(''); setOptions(['', '', '', '']); setCorrectAnswer(''); setQuestionImage(''); setImagePreview(''); if (fileInputRef.current) fileInputRef.current.value = ''; } });
+    };
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) { setQuestionImage(''); setImagePreview(''); return; }
+        if (file.size > 5 * 1024 * 1024) { alert('Image must be under 5MB'); e.target.value = ''; return; }
+        // Compress image using canvas to save MongoDB Atlas storage
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX = 800; // max width or height in pixels
+                let w = img.width, h = img.height;
+                if (w > MAX || h > MAX) {
+                    if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+                    else { w = Math.round(w * MAX / h); h = MAX; }
+                }
+                canvas.width = w; canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                
+                // Fill with white background to handle transparent PNGs
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, w, h);
+                ctx.drawImage(img, 0, 0, w, h);
+                
+                const compressed = canvas.toDataURL('image/jpeg', 0.8);
+                setQuestionImage(compressed);
+                setImagePreview(compressed);
+            };
+            img.onerror = () => {
+                alert('Failed to process image. Please try another one.');
+                setQuestionImage('');
+                setImagePreview('');
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            };
+            img.src = reader.result;
+        };
+        reader.onerror = () => alert('Failed to read file.');
+        reader.readAsDataURL(file);
     };
 
     const bg = 'var(--neu-bg)';
@@ -444,6 +486,30 @@ const AdminDashboard = () => {
                                 </select>
                             </div>
                             <NeuInput label="Question Text" type="text" required value={question} onChange={e => setQuestion(e.target.value)} placeholder="Enter the question" />
+                            <div>
+                                <label style={labelStyle}>Question Image (optional)</label>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file" accept="image/*" onChange={handleImageChange}
+                                    style={{
+                                        width: '100%', padding: '10px 14px',
+                                        background: 'var(--neu-bg)', border: 'none', borderRadius: 'var(--radius-md)',
+                                        boxShadow: 'inset 4px 4px 10px rgba(163,177,198,0.6), inset -4px -4px 10px rgba(255,255,255,0.85)',
+                                        fontSize: 13, fontFamily: 'inherit', color: 'var(--color-text-primary)', cursor: 'pointer'
+                                    }}
+                                />
+                                {imagePreview && (
+                                    <div style={{ marginTop: 12, position: 'relative', display: 'inline-block' }}>
+                                        <img src={imagePreview} alt="Preview" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 12, border: '2px solid rgba(108,99,255,0.2)' }} />
+                                        <button type="button" onClick={() => { setQuestionImage(''); setImagePreview(''); if (fileInputRef.current) fileInputRef.current.value = ''; }} style={{
+                                            position: 'absolute', top: -8, right: -8, width: 24, height: 24, borderRadius: '50%',
+                                            background: '#ff3b30', color: 'white', border: 'none', cursor: 'pointer',
+                                            fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            boxShadow: '0 2px 8px rgba(255,59,48,0.4)'
+                                        }}>×</button>
+                                    </div>
+                                )}
+                            </div>
                             <div>
                                 <label style={labelStyle}>Options</label>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

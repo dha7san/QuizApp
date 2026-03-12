@@ -375,9 +375,23 @@ const QuizPage = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
                         <span className="badge badge-purple">Q {currentQ + 1} / {questions.length}</span>
                     </div>
-                    <h2 style={{ fontSize: 'clamp(16px,3.5vw,20px)', fontWeight: 600, lineHeight: 1.55, letterSpacing: '-0.01em', marginBottom: 'clamp(20px,4vw,28px)', color: 'var(--color-text-primary)' }}>
+                    <h2 style={{ fontSize: 'clamp(16px,3.5vw,20px)', fontWeight: 600, lineHeight: 1.55, letterSpacing: '-0.01em', marginBottom: curQ.image ? 16 : 'clamp(20px,4vw,28px)', color: 'var(--color-text-primary)' }}>
                         {curQ.question}
                     </h2>
+                    {curQ.image && (
+                        <div style={{ marginBottom: 'clamp(18px,4vw,26px)', textAlign: 'center' }}>
+                            <img
+                                src={curQ.image}
+                                alt="Question"
+                                style={{
+                                    maxWidth: '100%', maxHeight: 320, borderRadius: 14,
+                                    border: '2px solid var(--color-border)',
+                                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                                    objectFit: 'contain'
+                                }}
+                            />
+                        </div>
+                    )}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {curQ.options.map((opt, i) => {
                             const sel = answers[curQ._id] === opt;

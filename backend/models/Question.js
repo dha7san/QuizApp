@@ -8,7 +8,8 @@ const questionSchema = new mongoose.Schema({
         required: true,
         validate: [arrayLimit, '{PATH} exceeds the limit of 4']
     },
-    correctAnswer: { type: String, required: true }
+    correctAnswer: { type: String, required: true },
+    image: { type: String, default: '' }
 }, { timestamps: true });
 
 function arrayLimit(val) {

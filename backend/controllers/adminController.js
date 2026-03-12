@@ -31,7 +31,7 @@ export const createQuiz = async (req, res) => {
 
 export const addQuestion = async (req, res) => {
     try {
-        const { quizId, question, options, correctAnswer } = req.body;
+        const { quizId, question, options, correctAnswer, image } = req.body;
 
         const quiz = await Quiz.findById(quizId);
         if (!quiz) {
@@ -42,7 +42,8 @@ export const addQuestion = async (req, res) => {
             quizId,
             question,
             options,
-            correctAnswer
+            correctAnswer,
+            image
         });
 
         res.status(201).json(newQuestion);
