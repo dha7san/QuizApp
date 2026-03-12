@@ -137,9 +137,10 @@ const AdminDashboard = () => {
         socketRef.current = socket;
         
         socket.on('connect', () => {
+            const rid = selectedQuizForAttendees.toString();
             console.log('✅ MONITOR CONNECTED:', socket.id);
-            console.log('📢 Joining Room:', `admin:${selectedQuizForAttendees}`);
-            socket.emit('admin:join', selectedQuizForAttendees);
+            console.log('📢 Joining Monitoring Room:', `admin:${rid}`);
+            socket.emit('admin:join', rid);
             setSocketConnected(true);
         });
 
@@ -160,27 +161,31 @@ const AdminDashboard = () => {
         socket.on('flag:update', (data) => {
             console.log('🚩 LIVE SECURITY ALERT RECEIVED:', data);
             
-            // Check if user ID matches one in our current attendee list
-            const alertData = { 
-                ...data, 
-                id: `alert-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, 
-                receivedAt: new Date() 
-            };
-            
-            setFlagAlerts(prev => [alertData, ...prev].slice(0, 50)); // Keep more alerts
+            setFlagAlerts(prev => {
+                const isDup = prev.some(a => a.id === data.id || (a.userName === data.userName && a.timestamp === data.timestamp));
+                if (isDup) return prev;
+                const alertData = { 
+                    ...data, 
+                    id: data.id || `alert-${Date.now()}`, 
+                    receivedAt: new Date() 
+                };
+                return [alertData, ...prev].slice(0, 50);
+            });
             
             setAttendees(prev => {
                 if (!prev) return prev;
-                console.log('🔄 Updating attendee status in table for user:', data.userId);
+                const uid = data.userId?.toString();
+                console.log('🔄 Table Update Sync for UserID:', uid);
+                
                 const updatedAttendees = prev.attendees.map(a => {
-                    const match = a._id?.toString() === data.userId?.toString();
-                    if (match) {
+                    const aid = a._id?.toString();
+                    if (aid === uid) {
+                        console.log(`✨ Matched attendee ${a.name}! Updating flags to ${data.flagCount}`);
                         return { 
                             ...a, 
                             flagCount: data.flagCount, 
                             isSuspicious: true, 
                             lastFlagType: data.flagType,
-                            // Trigger a quick flash effect in UI
                             _lastUpdate: Date.now()
                         };
                     }

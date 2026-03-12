@@ -4,17 +4,33 @@ import Question from '../models/Question.js';
 import Submission from '../models/Submission.js';
 import User from '../models/User.js';
 import QuizState from '../models/QuizState.js';
+import { io } from '../index.js';
 
 // Helper to find actual Quiz document from either an ID or a human-readable Code
 const resolveQuiz = async (idOrCode) => {
     if (!idOrCode) return null;
+    console.log(`🔍 Resolving quiz for identifier: ${idOrCode}`);
+    
     if (mongoose.Types.ObjectId.isValid(idOrCode)) {
-        return await Quiz.findById(idOrCode);
+        const quiz = await Quiz.findById(idOrCode);
+        if (quiz) {
+            console.log(`✅ Quiz found by ID: ${quiz.title} (${quiz._id})`);
+            return quiz;
+        }
     }
+    
     // Case-insensitive search for the quiz code
-    return await Quiz.findOne({ 
+    const quizByCode = await Quiz.findOne({ 
         quizCode: { $regex: new RegExp(`^${idOrCode.trim()}$`, 'i') } 
     });
+    
+    if (quizByCode) {
+        console.log(`✅ Quiz found by Code: ${quizByCode.title} (${quizByCode._id})`);
+    } else {
+        console.warn(`❌ Quiz NOT FOUND for identifier: ${idOrCode}`);
+    }
+    
+    return quizByCode;
 };
 
 
@@ -358,7 +374,6 @@ export const reportFlag = async (req, res) => {
         const user = await User.findById(userId).select('name email');
 
         // Emit real-time flag event to admin via Socket.IO
-        const io = req.app.get('io');
         if (io) {
             const roomName = `admin:${actualQuizId.toString()}`;
             const roomSize = io.sockets.adapter.rooms.get(roomName)?.size || 0;
@@ -375,7 +390,7 @@ export const reportFlag = async (req, res) => {
                 timestamp: new Date()
             });
         } else {
-            console.warn('⚠️ Cannot broadcast flag: Socket.IO (io) instance NOT FOUND in req.app');
+            console.warn('⚠️ Cannot broadcast flag: Socket.IO (io) instance NOT EXPORTED correctly');
         }
 
         res.json({ flagCount: quizState.flagCount });
