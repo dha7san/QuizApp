@@ -116,6 +116,7 @@ const AdminDashboard = () => {
  
     useEffect(() => {
         if (!selectedQuizForAttendees) {
+            console.log('🔌 No quiz selected for monitoring. Socket idle.');
             setSocketConnected(false);
             if (socketRef.current) {
                 socketRef.current.disconnect();
@@ -124,56 +125,70 @@ const AdminDashboard = () => {
             return;
         }
         
-        console.log('📡 Initializing Admin Socket for Quiz:', selectedQuizForAttendees);
-        const socket = io(import.meta.env.VITE_API_URL, {
+        const apiUrl = import.meta.env.VITE_API_URL;
+        console.log('📡 Admin Monitoring Link: Initializing...', { quizId: selectedQuizForAttendees, url: apiUrl });
+        
+        const socket = io(apiUrl, {
             reconnection: true,
-            reconnectionAttempts: 10,
-            reconnectionDelay: 2000,
+            reconnectionAttempts: 20,
+            reconnectionDelay: 1000,
             transports: ['websocket', 'polling']
         });
         socketRef.current = socket;
         
         socket.on('connect', () => {
-            console.log('✅ Admin Socket Connected (ID:', socket.id, '). Joining room:', selectedQuizForAttendees);
+            console.log('✅ MONITOR CONNECTED:', socket.id);
+            console.log('📢 Joining Room:', `admin:${selectedQuizForAttendees}`);
             socket.emit('admin:join', selectedQuizForAttendees);
             setSocketConnected(true);
         });
         
         socket.on('disconnect', (reason) => {
-            console.warn('❌ Admin Socket Disconnected. Reason:', reason);
+            console.warn('❌ MONITOR DISCONNECTED:', reason);
+            setSocketConnected(false);
+        });
+
+        socket.on('connect_error', (err) => {
+            console.error('⚠️ MONITOR LINK ERROR:', err.message);
             setSocketConnected(false);
         });
         
         socket.on('flag:update', (data) => {
-            console.log('🚩 LIVE FLAG RECEIVED:', data);
-            // Ensure unique ID for list reconciliation
+            console.log('🚩 LIVE SECURITY ALERT RECEIVED:', data);
+            
+            // Check if user ID matches one in our current attendee list
             const alertData = { 
                 ...data, 
-                id: `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, 
+                id: `alert-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, 
                 receivedAt: new Date() 
             };
             
-            setFlagAlerts(prev => [alertData, ...prev].slice(0, 10));
+            setFlagAlerts(prev => [alertData, ...prev].slice(0, 50)); // Keep more alerts
             
             setAttendees(prev => {
                 if (!prev) return prev;
-                const upd = prev.attendees.map(a => 
-                    a._id?.toString() === data.userId?.toString() 
-                        ? { ...a, flagCount: data.flagCount, isSuspicious: true, lastFlagType: data.flagType } 
-                        : a
-                );
-                return { ...prev, attendees: upd };
+                console.log('🔄 Updating attendee status in table for user:', data.userId);
+                const updatedAttendees = prev.attendees.map(a => {
+                    const match = a._id?.toString() === data.userId?.toString();
+                    if (match) {
+                        return { 
+                            ...a, 
+                            flagCount: data.flagCount, 
+                            isSuspicious: true, 
+                            lastFlagType: data.flagType,
+                            // Trigger a quick flash effect in UI
+                            _lastUpdate: Date.now()
+                        };
+                    }
+                    return a;
+                });
+                return { ...prev, attendees: updatedAttendees };
             });
-        });
-
-        socket.on('connect_error', (err) => {
-            console.error('❌ Socket Connection Error:', err);
-            setSocketConnected(false);
         });
 
         return () => {
             if (socketRef.current) {
-                console.log('Cleaning up socket connection...');
+                console.log('🧹 Cleaning up monitoring link...');
                 socketRef.current.disconnect();
                 socketRef.current = null;
             }
@@ -209,11 +224,18 @@ const AdminDashboard = () => {
 
     const fetchLiveAttendees = async (quizId) => {
         try {
+            console.log('🔄 Fetching attendee snapshot for:', quizId);
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/live-attendees/${quizId}`, { headers: { Authorization: `Bearer ${user.token}` } });
             setAttendees(res.data); 
-            setSelectedQuizForAttendees(quizId); 
-            setFlagAlerts([]); // Reset alerts for NEW selection
-        } catch (e) { console.error(e); }
+            
+            // Only reset alerts if we switch to a DIFFERENT quiz
+            if (selectedQuizForAttendees !== quizId) {
+                setFlagAlerts([]);
+                setSelectedQuizForAttendees(quizId);
+            }
+        } catch (e) { 
+            console.error('❌ Failed to fetch attendees:', e); 
+        }
     };
 
     const handleToggleResults = async (quizId) => {

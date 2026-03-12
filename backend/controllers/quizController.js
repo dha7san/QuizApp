@@ -4,6 +4,7 @@ import Question from '../models/Question.js';
 import Submission from '../models/Submission.js';
 import User from '../models/User.js';
 import QuizState from '../models/QuizState.js';
+import { io } from '../index.js';
 
 // Helper to find actual Quiz document from either an ID or a human-readable Code
 const resolveQuiz = async (idOrCode) => {
@@ -358,12 +359,13 @@ export const reportFlag = async (req, res) => {
         const user = await User.findById(userId).select('name email');
 
         // Emit real-time flag event to admin via Socket.IO
-        const io = req.app.get('io');
         if (io) {
             const roomName = `admin:${actualQuizId.toString()}`;
-            console.log(`📡 Emitting flag update to room ${roomName} for user ${user?.name}`);
+            const roomSize = io.sockets.adapter.rooms.get(roomName)?.size || 0;
+            console.log(`📡 BROADCASTING Flag Update: [Room: ${roomName}] [Viewers: ${roomSize}] [User: ${user?.name}]`);
+            
             io.to(roomName).emit('flag:update', {
-                userId,
+                userId: userId.toString(),
                 userName: user?.name || 'Unknown',
                 userEmail: user?.email || '',
                 quizId: actualQuizId.toString(),
@@ -372,6 +374,8 @@ export const reportFlag = async (req, res) => {
                 flagEvents: quizState.flagEvents,
                 timestamp: new Date()
             });
+        } else {
+            console.warn('⚠️ Cannot broadcast flag: Socket.IO (io) instance NOT AVAILABLE');
         }
 
         res.json({ flagCount: quizState.flagCount });
