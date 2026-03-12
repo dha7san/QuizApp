@@ -147,9 +147,18 @@ const AdminDashboard = () => {
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/live-attendees/${quizId}`, { headers: { Authorization: `Bearer ${user.token}` } });
             setAttendees(res.data); setSelectedQuizForAttendees(quizId); setFlagAlerts([]);
             if (socketRef.current) socketRef.current.disconnect();
-            const socket = io(import.meta.env.VITE_API_URL);
+            const socket = io(import.meta.env.VITE_API_URL, {
+                reconnection: true,
+                reconnectionAttempts: 5
+            });
             socketRef.current = socket;
-            socket.on('connect', () => socket.emit('admin:join', quizId));
+            
+            socket.on('connect', () => {
+                console.log('Admin Socket Connected. Joining room:', quizId);
+                socket.emit('admin:join', quizId);
+            });
+            
+            socket.on('connect_error', (err) => console.error('Socket Connection Error:', err));
             socket.on('flag:update', (data) => {
                 const alertData = { ...data, id: Date.now() };
                 setFlagAlerts(prev => [alertData, ...prev].slice(0, 10)); // Keep last 10

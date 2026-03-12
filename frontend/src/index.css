@@ -472,9 +472,7 @@ body {
 .mobile-nav-overlay {
   display: none;
   position: fixed; inset: 0; z-index: 90;
-  background: rgba(255, 255, 255, 0.35); /* Increased transparency */
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  background: #ffffff; /* Removed transparency */
   padding: 100px 32px 32px;
   flex-direction: column; gap: 20px;
   opacity: 0; transform: translateY(-15px);

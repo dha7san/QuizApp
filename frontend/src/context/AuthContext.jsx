@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setIsBlocked(false);
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        window.location.href = '/';
     };
 
     return (
