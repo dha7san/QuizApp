@@ -456,16 +456,27 @@ const AdminDashboard = () => {
                                                         }}>
                                                             <ShieldAlert size={20} />
                                                         </div>
-                                                        <div style={{ flex: 1 }}>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                                                                <span style={{ fontWeight: 700, fontSize: 14, color: '#111' }}>{alert.userName}</span>
-                                                                <span style={{ fontSize: 11, fontWeight: 600, color: '#666' }}>{new Date(alert.timestamp).toLocaleTimeString()}</span>
+                                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                                                                <span style={{ fontWeight: 800, fontSize: 14, color: '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                    {alert.userName || 'Anonymous User'}
+                                                                </span>
+                                                                <span style={{ fontSize: 10, fontWeight: 600, color: '#999', flexShrink: 0 }}>
+                                                                    {new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                                </span>
                                                             </div>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: alert.flagCount >= 3 ? '#cc000a' : '#666' }}>
-                                                                {alert.flagType === 'tab_switch' && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Layout size={13} /> Tab Switch</span>}
-                                                                {alert.flagType === 'fullscreen_exit' && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><ExternalLink size={13} /> Exited Fullscreen</span>}
-                                                                {alert.flagType === 'page_blur' && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><AlertCircle size={13} /> Focus Lost</span>}
-                                                                <span style={{ fontWeight: 800 }}>• Flag #{alert.flagCount}</span>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: alert.flagCount >= 3 ? '#ff3b30' : '#666' }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
+                                                                    {alert.flagType === 'tab_switch' ? <><Layout size={13} /> Tab Switch</> :
+                                                                     alert.flagType === 'fullscreen_exit' ? <><ExternalLink size={13} /> Fullscreen Exit</> :
+                                                                     alert.flagType === 'page_blur' ? <><AlertCircle size={13} /> Focus Lost</> :
+                                                                     alert.flagType === 'refresh' ? <><RefreshCcw size={13} /> Page Refresh</> :
+                                                                     <><ShieldAlert size={13} /> {alert.flagType?.replace('_', ' ') || 'Unknown Violation'}</>}
+                                                                </div>
+                                                                <span style={{ opacity: 0.4 }}>•</span>
+                                                                <span style={{ fontWeight: 800, color: alert.flagCount >= 3 ? '#ff3b30' : 'var(--brand-accent)' }}>
+                                                                    Flag #{alert.flagCount}
+                                                                </span>
                                                             </div>
                                                         </div>
                                                         {alert.flagCount >= 3 && (
@@ -494,7 +505,9 @@ const AdminDashboard = () => {
                                             {attendees.attendees.map((a, i) => (
                                                 <tr key={a._id || i} style={{
                                                     borderBottom: '1px solid rgba(0,0,0,0.04)',
-                                                    background: a.flagCount >= 3 ? 'rgba(255,69,58,0.04)' : a.flagCount > 0 ? 'rgba(248,180,0,0.04)' : 'transparent'
+                                                    background: a.flagCount >= 3 ? 'rgba(255,59,48,0.04)' : a.flagCount > 0 ? 'rgba(255,159,10,0.03)' : 'transparent',
+                                                    animation: a.isSuspicious ? 'shake 0.5s ease-in-out' : 'none',
+                                                    transition: 'all 0.3s ease'
                                                 }}>
                                                     <td style={{ padding: '12px 12px', color: '#aaa', fontWeight: 600 }}>{i + 1}</td>
                                                     <td style={{ padding: '12px 12px', fontWeight: 600, color: 'var(--color-text-primary)' }}>{a.name || '—'}</td>

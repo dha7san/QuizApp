@@ -30,7 +30,7 @@ const UserDashboard = () => {
                 { quizCode: joinCode },
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
-            navigate(`/quiz/${r.data.quizId}`);
+            navigate(`/quiz/${joinCode.toUpperCase().trim()}`);
         } catch (err) {
             setJoinError(err.response?.data?.message || 'Invalid code or quiz not available.');
         } finally { setJoining(false); }

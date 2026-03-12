@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Quiz from '../models/Quiz.js';
 import Question from '../models/Question.js';
 import Submission from '../models/Submission.js';
@@ -51,20 +52,32 @@ export const verifyQuizCode = async (req, res) => {
 export const getQuizInfo = async (req, res) => {
     try {
         const { quizId } = req.body;
+        let quiz;
 
-        const quiz = await Quiz.findById(quizId);
+        // Try finding by ID first, if not a valid ID, try finding by Quiz Code
+        if (mongoose.Types.ObjectId.isValid(quizId)) {
+            quiz = await Quiz.findById(quizId);
+        } else {
+            quiz = await Quiz.findOne({ 
+                quizCode: { $regex: new RegExp(`^${quizId}$`, 'i') },
+                isActive: true 
+            });
+        }
+
         if (!quiz || !quiz.isActive) {
             return res.status(404).json({ message: 'Quiz not found or not active' });
         }
+        
+        const actualQuizId = quiz._id;
 
         // Check if user already submitted
-        const existingSubmission = await Submission.findOne({ userId: req.user.id, quizId });
+        const existingSubmission = await Submission.findOne({ userId: req.user.id, quizId: actualQuizId });
         if (existingSubmission) {
             return res.status(400).json({ message: 'You have already submitted this quiz' });
         }
 
         // Check for existing saved state (user is resuming)
-        const savedState = await QuizState.findOne({ userId: req.user.id, quizId });
+        const savedState = await QuizState.findOne({ userId: req.user.id, quizId: actualQuizId });
 
         if (savedState) {
             // Calculate remaining time based on when the attempt started
@@ -74,7 +87,7 @@ export const getQuizInfo = async (req, res) => {
             // If time has fully expired, auto-submit whatever they had
             if (timeRemaining <= 0) {
                 let score = 0;
-                const questionsList = await Question.find({ quizId });
+                const questionsList = await Question.find({ quizId: actualQuizId });
                 const answersObj = savedState.answers ? Object.fromEntries(savedState.answers.entries()) : {};
 
                 const evaluatedAnswers = Object.keys(answersObj).map(qId => {
@@ -85,18 +98,18 @@ export const getQuizInfo = async (req, res) => {
                 });
 
                 await Submission.create({
-                    userId: req.user.id, quizId,
+                    userId: req.user.id, quizId: actualQuizId,
                     answers: evaluatedAnswers, score,
                     isSuspicious: true, tabSwitches: 0, fullscreenExits: 0
                 });
 
-                await QuizState.findOneAndDelete({ userId: req.user.id, quizId });
+                await QuizState.findOneAndDelete({ userId: req.user.id, quizId: actualQuizId });
                 return res.status(403).json({ message: 'Your quiz time has expired. It has been automatically submitted.' });
             }
 
             // User is resuming — return saved answers + questions + time
             const answersObj = savedState.answers ? Object.fromEntries(savedState.answers.entries()) : {};
-            const questions = await Question.find({ quizId }).select('-correctAnswer');
+            const questions = await Question.find({ quizId: actualQuizId }).select('-correctAnswer');
 
             return res.json({
                 quiz, questions,

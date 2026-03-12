@@ -72,7 +72,7 @@ const QuizPage = () => {
     const reportFlag = useCallback(async (flagType) => {
         try {
             const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/quiz/flag`,
-                { quizId: id, flagType },
+                { quizId: quiz?._id || id, flagType },
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
             flagCountRef.current = res.data.flagCount;
@@ -176,7 +176,7 @@ const QuizPage = () => {
             if (isResuming) {
                 setQuizStarted(true);
             } else {
-                const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/quiz/start`, { quizId: id }, { headers: { Authorization: `Bearer ${user.token}` } });
+                const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/quiz/start`, { quizId: quiz?._id || id }, { headers: { Authorization: `Bearer ${user.token}` } });
                 setQuestions(res.data.questions);
                 setTimeLeft(res.data.quiz.duration * 60);
                 setQuizStarted(true);
@@ -193,7 +193,7 @@ const QuizPage = () => {
         try {
             setIsSaving(true);
             await axios.post(`${import.meta.env.VITE_API_URL}/api/quiz/save`,
-                { quizId: id, answers: newAnswers, timeRemaining: timeLeft },
+                { quizId: quiz?._id || id, answers: newAnswers, timeRemaining: timeLeft },
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
         } catch { } finally { setTimeout(() => setIsSaving(false), 600); }
@@ -206,7 +206,7 @@ const QuizPage = () => {
         const formatted = Object.keys(cur).map(qId => ({ questionId: qId, selectedOption: cur[qId] }));
         try {
             const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/quiz/submit`, {
-                quizId: id, answers: formatted,
+                quizId: quiz?._id || id, answers: formatted,
                 isSuspicious: flagCountRef.current > 0 || force,
                 tabSwitches: flagCountRef.current, fullscreenExits: 0,
             }, { headers: { Authorization: `Bearer ${user.token}` } });
