@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { ArrowRight } from 'lucide-react';
 
 /* ── Confetti ─────────────────────────────────────────── */
 const Confetti = () => {
@@ -353,16 +354,16 @@ const QuizPage = () => {
             </div>
 
             {/* Question Nav Pills (scroll on mobile) */}
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 18, overflowX: 'auto', paddingBottom: 4 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'nowrap', marginBottom: 24, overflowX: 'auto', padding: '4px 2px 12px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 {questions.map((q, i) => (
                     <button key={q._id} onClick={() => setCurrentQ(i)} style={{
-                        minWidth: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                        border: i === currentQ ? '2px solid var(--brand-accent)' : '1.5px solid var(--color-border)',
-                        background: answers[q._id] ? 'linear-gradient(135deg,#6c63ff,#a29bfe)' : i === currentQ ? 'rgba(108,99,255,0.08)' : 'var(--color-surface)',
-                        color: answers[q._id] ? 'white' : i === currentQ ? 'var(--brand-accent)' : 'var(--color-text-secondary)',
-                        fontWeight: 700, fontSize: 12, cursor: 'pointer',
-                        transition: 'all var(--dur-fast) var(--ease-out)',
-                        boxShadow: i === currentQ ? '0 4px 10px rgba(108,99,255,0.2)' : 'none',
+                        minWidth: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                        border: i === currentQ ? '2px solid var(--brand-accent)' : '1px solid rgba(0,0,0,0.06)',
+                        background: answers[q._id] ? 'linear-gradient(135deg,#6c63ff,#a29bfe)' : i === currentQ ? 'rgba(108,99,255,0.08)' : 'white',
+                        color: answers[q._id] ? 'white' : i === currentQ ? 'var(--brand-accent)' : '#666',
+                        fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                        boxShadow: i === currentQ ? '0 8px 16px rgba(108,99,255,0.15)' : '0 2px 4px rgba(0,0,0,0.02)',
                     }}>
                         {i + 1}
                     </button>
@@ -375,18 +376,22 @@ const QuizPage = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
                         <span className="badge badge-purple">Q {currentQ + 1} / {questions.length}</span>
                     </div>
-                    <h2 style={{ fontSize: 'clamp(16px,3.5vw,20px)', fontWeight: 600, lineHeight: 1.55, letterSpacing: '-0.01em', marginBottom: curQ.image ? 16 : 'clamp(20px,4vw,28px)', color: 'var(--color-text-primary)' }}>
+                    <h2 style={{ fontSize: 'clamp(18px, 4.5vw, 24px)', fontWeight: 800, lineHeight: 1.3, letterSpacing: '-0.02em', marginBottom: curQ.image ? 20 : 32, color: '#111' }}>
                         {curQ.question}
                     </h2>
                     {curQ.image && (
-                        <div style={{ marginBottom: 'clamp(18px,4vw,26px)', textAlign: 'center' }}>
+                        <div style={{ 
+                            marginBottom: 32, textAlign: 'center', 
+                            background: '#f8f9fa', padding: 12, borderRadius: 20, 
+                            border: '1px solid rgba(0,0,0,0.04)', overflow: 'hidden'
+                        }}>
                             <img
                                 src={curQ.image}
                                 alt="Question"
                                 style={{
-                                    maxWidth: '100%', maxHeight: 320, borderRadius: 14,
-                                    border: '2px solid var(--color-border)',
-                                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                                    maxWidth: '100%', width: 'auto', height: 'auto', maxHeight: '50vh', 
+                                    borderRadius: 12, display: 'block', margin: '0 auto',
+                                    boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
                                     objectFit: 'contain'
                                 }}
                             />
@@ -417,21 +422,26 @@ const QuizPage = () => {
 
                 <div style={{ display: 'flex', gap: 10 }}>
                     {currentQ < questions.length - 1 ? (
-                        <button className="btn btn-primary" onClick={() => setCurrentQ(p => Math.min(questions.length-1, p+1))}>
-                            Next →
+                        <button className="btn btn-primary" style={{ padding: '12px 32px', borderRadius: 100 }} onClick={() => setCurrentQ(p => Math.min(questions.length-1, p+1))}>
+                            Next Question <ArrowRight size={18} style={{ marginLeft: 4 }} />
                         </button>
                     ) : (
                         <button
                             onClick={() => handleSubmit(false)} disabled={submitting}
                             style={{
-                                padding: '12px 28px', borderRadius: 18, border: 'none',
-                                background: submitting ? '#ccc' : 'linear-gradient(135deg,#30d158,#00b894)',
-                                color: 'white', fontWeight: 700, fontSize: 16, fontFamily: 'inherit',
+                                padding: '14px 36px', borderRadius: 100, border: 'none',
+                                background: submitting ? '#e2e2ea' : 'linear-gradient(135deg, #111, #333)',
+                                color: submitting ? '#a0a0ab' : 'white', 
+                                fontWeight: 700, fontSize: 16,
                                 cursor: submitting ? 'not-allowed' : 'pointer',
-                                boxShadow: '0 4px 18px rgba(48,209,88,0.35)',
-                                transition: 'all 200ms ease',
-                            }}>
-                            {submitting ? 'Submitting…' : '✓ Submit Quiz'}
+                                boxShadow: submitting ? 'none' : '0 10px 25px rgba(0,0,0,0.15)',
+                                transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                                display: 'flex', alignItems: 'center', gap: 8
+                            }}
+                            onMouseOver={(e) => { if(!submitting) e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                            onMouseOut={(e) => { if(!submitting) e.currentTarget.style.transform = 'translateY(0)'; }}
+                        >
+                            {submitting ? 'Submitting...' : 'Finish & Submit Quiz'}
                         </button>
                     )}
                 </div>

@@ -460,14 +460,14 @@ body {
 .mobile-nav-overlay {
   display: none;
   position: fixed; inset: 0; z-index: 90;
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 80px 24px 24px;
-  flex-direction: column; gap: 16px;
-  opacity: 0; transform: translateY(-10px);
+  background: rgba(255, 255, 255, 0.35); /* Increased transparency */
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  padding: 100px 32px 32px;
+  flex-direction: column; gap: 20px;
+  opacity: 0; transform: translateY(-15px);
   pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .mobile-nav-overlay.open {
   display: flex; opacity: 1; transform: translateY(0); pointer-events: auto;
@@ -497,8 +497,17 @@ body {
 }
 
 /* ── Responsive grid helpers ─────────────────── */
-.grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 16px; }
-@media (max-width: 480px) { .grid-auto { grid-template-columns: 1fr; } }
+.grid-auto { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+  gap: 24px; 
+}
+@media (max-width: 640px) { 
+  .grid-auto { 
+    grid-template-columns: 1fr; 
+    gap: 16px; 
+  } 
+}
 
 /* Disabled text selection during quiz */
 .no-select { user-select: none; -webkit-user-select: none; }

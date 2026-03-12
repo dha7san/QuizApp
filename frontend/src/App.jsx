@@ -141,7 +141,7 @@ const Header = () => {
                 background: '#111', display: 'flex', alignItems: 'center', 
                 justifyContent: 'center', color: 'white', fontWeight: 600, fontSize: 12 
               }}>
-                D
+                {user.name?.charAt(0).toUpperCase() || 'U'}
               </div>
               <button 
                 onClick={logout} 

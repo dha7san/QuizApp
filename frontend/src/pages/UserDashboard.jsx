@@ -65,26 +65,26 @@ const UserDashboard = () => {
             animate="show"
         >
             {/* Header Section */}
-            <motion.div variants={itemVariants} style={{ marginBottom: 40, display: 'flex', flexWrap: 'wrap', gap: 24, justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <div>
-                    <h1 style={{ fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8, color: '#111' }}>
+            <motion.div variants={itemVariants} style={{ marginBottom: 40, display: 'flex', flexWrap: 'wrap', gap: 24, justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ flex: '1 1 300px' }}>
+                    <h1 style={{ fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8, color: '#111', lineHeight: 1.1 }}>
                         {greeting}, <br />
                         <span style={{ background: 'linear-gradient(135deg, #6c63ff 0%, #a29bfe 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                             {user.name?.split(' ')[0]}
                         </span> 👋
                     </h1>
-                    <p style={{ color: '#666', fontSize: 16, fontWeight: 500, letterSpacing: '-0.01em' }}>
+                    <p style={{ color: '#666', fontSize: 'clamp(14px, 2vw, 16px)', fontWeight: 500, letterSpacing: '-0.01em' }}>
                         Ready to test your knowledge today?
                     </p>
                 </div>
                 
-                <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', width: '100%', maxWidth: 'fit-content' }}>
                     <button 
                         onClick={() => navigate('/my-results')} 
                         style={{ 
-                            padding: '12px 20px', borderRadius: 16, border: '1px solid rgba(0,0,0,0.08)',
+                            flex: '1 1 auto', padding: '12px 20px', borderRadius: 16, border: '1px solid rgba(0,0,0,0.08)',
                             background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)',
-                            display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, fontSize: 14,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 600, fontSize: 14,
                             color: '#444', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
                         }}
                         onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.06)'; }}
@@ -96,9 +96,9 @@ const UserDashboard = () => {
                     <button 
                         onClick={() => navigate('/leaderboard')} 
                         style={{ 
-                            padding: '12px 20px', borderRadius: 16, border: 'none',
+                            flex: '1 1 auto', padding: '12px 20px', borderRadius: 16, border: 'none',
                             background: '#111', color: 'white',
-                            display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, fontSize: 14,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 600, fontSize: 14,
                             cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 14px rgba(0,0,0,0.1)'
                         }}
                         onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.background = '#222'; }}
@@ -113,57 +113,59 @@ const UserDashboard = () => {
             {/* Quick Join Card */}
             <motion.div variants={itemVariants} style={{ marginBottom: 48 }}>
                 <div style={{
-                    position: 'relative', borderRadius: 28, overflow: 'hidden',
+                    position: 'relative', borderRadius: 'min(28px, 6vw)', overflow: 'hidden',
                     background: 'white', border: '1px solid rgba(0,0,0,0.04)',
                     boxShadow: '0 20px 40px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02)',
-                    display: 'flex', flexWrap: 'wrap'
                 }}>
                     <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: '50%', height: '200%', background: 'radial-gradient(circle, rgba(108,99,255,0.06) 0%, rgba(255,255,255,0) 70%)', pointerEvents: 'none' }} />
                     
-                    <div style={{ flex: '1 1 300px', padding: 'clamp(24px, 5vw, 40px)' }}>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', background: 'rgba(108,99,255,0.1)', color: '#6c63ff', borderRadius: 100, fontWeight: 700, fontSize: 13, marginBottom: 20 }}>
+                    <div style={{ position: 'relative', padding: 'clamp(20px, 6vw, 48px)', zIndex: 1 }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', background: 'rgba(108,99,255,0.1)', color: '#6c63ff', borderRadius: 100, fontWeight: 700, fontSize: 12, marginBottom: 16 }}>
                             <KeyRound size={14} strokeWidth={3} /> Have a code?
                         </div>
-                        <h2 style={{ fontSize: 'clamp(24px, 3vw, 32px)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 12, color: '#111' }}>
+                        <h2 style={{ fontSize: 'clamp(22px, 4vw, 32px)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 10, color: '#111' }}>
                             Join a Private Quiz
                         </h2>
-                        <p style={{ color: '#666', fontSize: 16, lineHeight: 1.5, marginBottom: 28, maxWidth: 400 }}>
+                        <p style={{ color: '#666', fontSize: 'clamp(14px, 2vw, 16px)', lineHeight: 1.5, marginBottom: 24, maxWidth: 440 }}>
                             Enter the unique 6-character code provided by your instructor to instantly access your assessment.
                         </p>
                         
-                        <form onSubmit={handleJoin} style={{ display: 'flex', gap: 12, maxWidth: 460 }}>
-                            <input
-                                type="text"
-                                placeholder="CODE !!"
-                                value={joinCode}
-                                onChange={e => { setJoinCode(e.target.value.toUpperCase()); setJoinError(''); }}
-                                style={{
-                                    flex: 1, padding: '16px 20px', fontSize: 18, fontWeight: 700,
-                                    letterSpacing: '0.1em', color: '#111', background: '#f8f9fa',
-                                    border: joinError ? '2px solid rgba(255,59,48,0.5)' : '2px solid transparent',
-                                    borderRadius: 16, outline: 'none', transition: 'all 0.2s',
-                                    textTransform: 'uppercase'
-                                }}
-                                onFocus={(e) => { if(!joinError) e.target.style.border = '2px solid rgba(108,99,255,0.3)'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(108,99,255,0.08)'; }}
-                                onBlur={(e) => { if(!joinError) e.target.style.border = '2px solid transparent'; e.target.style.background = '#f8f9fa'; e.target.style.boxShadow = 'none'; }}
-                            />
+                        <form onSubmit={handleJoin} style={{ display: 'flex', gap: 12, maxWidth: 500, flexWrap: 'wrap' }}>
+                            <div style={{ flex: '2 1 240px', minWidth: 0 }}>
+                                <input
+                                    type="text"
+                                    placeholder="CODE !!"
+                                    value={joinCode}
+                                    onChange={e => { setJoinCode(e.target.value.toUpperCase()); setJoinError(''); }}
+                                    style={{
+                                        width: '100%', padding: '16px 20px', fontSize: 18, fontWeight: 700,
+                                        letterSpacing: '0.15em', color: '#111', background: '#f8f9fa',
+                                        border: joinError ? '2px solid rgba(255,59,48,0.5)' : '2px solid transparent',
+                                        borderRadius: 16, outline: 'none', transition: 'all 0.2s',
+                                        textTransform: 'uppercase'
+                                    }}
+                                    onFocus={(e) => { if(!joinError) e.target.style.border = '2px solid rgba(108,99,255,0.3)'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(108,99,255,0.08)'; }}
+                                    onBlur={(e) => { if(!joinError) e.target.style.border = '2px solid transparent'; e.target.style.background = '#f8f9fa'; e.target.style.boxShadow = 'none'; }}
+                                />
+                            </div>
                             <button 
                                 type="submit" 
                                 disabled={joining || !joinCode.trim()} 
                                 style={{
-                                    padding: '0 28px', borderRadius: 16, border: 'none',
+                                    flex: '1 1 120px', padding: '16px 28px', borderRadius: 16, border: 'none',
                                     background: (joining || !joinCode.trim()) ? '#e2e2ea' : '#6c63ff',
                                     color: (joining || !joinCode.trim()) ? '#a0a0ab' : 'white',
                                     fontWeight: 700, fontSize: 16, cursor: (joining || !joinCode.trim()) ? 'not-allowed' : 'pointer',
-                                    transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 8
+                                    transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                    boxShadow: (joining || !joinCode.trim()) ? 'none' : '0 8px 16px rgba(108,99,255,0.15)'
                                 }}
                             >
-                                {joining ? 'Verifying...' : 'Join'} <ArrowRight size={18} strokeWidth={3} />
+                                {joining ? 'Verifying...' : 'Join Quiz'} <ArrowRight size={18} strokeWidth={3} />
                             </button>
                         </form>
                         {joinError && (
-                            <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ color: '#ff3b30', fontSize: 14, fontWeight: 500, marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                ⚠ {joinError}
+                            <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ color: '#ff3b30', fontSize: 14, fontWeight: 500, marginTop: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span style={{ fontSize: 16 }}>⚠</span> {joinError}
                             </motion.p>
                         )}
                     </div>
