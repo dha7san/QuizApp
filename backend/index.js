@@ -10,15 +10,18 @@ dotenv.config();
 const app = express();
 const httpServer = createServer(app);
 
+// Export io for direct use in controllers
+export let io;
+
 // Socket.IO setup
-const io = new Server(httpServer, {
+io = new Server(httpServer, {
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
     }
 });
 
-// IMPORTANT: Set io on app BEFORE routes are imported and used
+// Also set on app for flexibility
 app.set("io", io);
 
 import authRoutes from "./routes/authRoutes.js";
@@ -44,6 +47,7 @@ io.on("connection", (socket) => {
 
     // Admin joins a room to receive real-time flag updates
     socket.on("admin:join", (quizId) => {
+        if (!quizId) return;
         const roomName = `admin:${quizId.toString()}`;
         socket.join(roomName);
         console.log(`👤 Admin joined room: ${roomName} (Socket: ${socket.id})`);
@@ -54,6 +58,7 @@ io.on("connection", (socket) => {
 
     // Admin leaves room
     socket.on("admin:leave", (quizId) => {
+        if (!quizId) return;
         const roomName = `admin:${quizId.toString()}`;
         socket.leave(roomName);
         console.log(`👤 Admin left room: ${roomName}`);
